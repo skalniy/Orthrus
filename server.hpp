@@ -17,12 +17,10 @@ private:
 	Acceptor acceptor = Acceptor(io_service);
 	
 
+	void run(void);
+
 public:
 	void start(void);
 
 	void stop(void);
-
-private:
-	void run(void);
-
 };
