@@ -18,18 +18,24 @@ private:
 
 
 public:
-	Peer(std::shared_ptr<boost::asio::ip::tcp::socket> sock_);
+	Peer(std::shared_ptr<boost::asio::ip::tcp::socket>);
 	
 	~Peer();
 
 	std::shared_ptr<boost::asio::ip::tcp::socket> sock;
 	std::string port;
 
-	void listen(void);
+	inline std::string get_remote_address(void) {
+		return sock->remote_endpoint().address().to_string() + ':' + port;
+	}
 
-	void read_handler(const boost::system::error_code& ec,
-		std::size_t bytes_transferred);
+	inline void listen(void) 
+	{
+		boost::asio::async_read_until(*sock, *buf, '\n',
+			boost::bind(&Peer::read_handler, this, _1, _2));
+	}
 
-	void write_handler(const boost::system::error_code& error, 
-  		std::size_t bytes_transferred);
+	void read_handler(const boost::system::error_code&, std::size_t);
+
+	void write_handler(const boost::system::error_code&, std::size_t);
 };

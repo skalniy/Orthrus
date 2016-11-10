@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 #include <thread>
 #include <unordered_set>
+#include <map>
 #include "peer.hpp"
 
 
@@ -20,8 +21,7 @@ private:
 
 	std::string name = "anonymous";
 
-	std::unordered_set<std::shared_ptr<Peer>> g_peers;
-	std::unordered_set<std::string> g_eps;
+	std::map<std::string, std::shared_ptr<Peer>> peers;
 
 
 	void init(void);
@@ -39,7 +39,7 @@ public:
 
 	void start(void);
 
-	void connect(std::string ip, std::string peer_port);
+	void connect(std::string);
 
 	void share_peers(std::shared_ptr<boost::asio::ip::tcp::socket> target);
 
