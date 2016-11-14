@@ -7,7 +7,7 @@
 
 
 
-Acceptor::Acceptor(std::shared_ptr<boost::asio::io_service> io_service) :
+Router::Router(std::shared_ptr<boost::asio::io_service> io_service) :
     acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*io_service))  
 {
     std::cout << "Your name: ";
@@ -23,7 +23,7 @@ Acceptor::Acceptor(std::shared_ptr<boost::asio::io_service> io_service) :
 }
 
 
-void Acceptor::start(void) 
+void Router::start(void) 
 {
     acceptor->listen();
     std::string addr;
@@ -32,13 +32,13 @@ void Acceptor::start(void)
     if (addr != "0")
         connect(addr);
 
-    writer_thread.reset(new std::thread(&Acceptor::msg_proc, this));
+    writer_thread.reset(new std::thread(&Router::msg_proc, this));
 
     init();
 }
 
 
-void Acceptor::init(void)
+void Router::init(void)
 {
     std::shared_ptr<boost::asio::ip::tcp::socket> sock =
         std::make_shared<boost::asio::ip::tcp::socket>(
@@ -47,12 +47,12 @@ void Acceptor::init(void)
 
     acceptor->async_accept(
         *sock, 
-        boost::bind(&Acceptor::accept_handler, this, _1, sock)
+        boost::bind(&Router::accept_handler, this, _1, sock)
     );
 }
 
 
-void Acceptor::accept_handler(const boost::system::error_code& error,
+void Router::accept_handler(const boost::system::error_code& error,
     std::shared_ptr<boost::asio::ip::tcp::socket> sock) 
 {
     if (error) {
@@ -70,7 +70,7 @@ void Acceptor::accept_handler(const boost::system::error_code& error,
 }
 
 
-void Acceptor::msg_proc(void) 
+void Router::msg_proc(void) 
 {
     while (true) {
         std::string msg;
@@ -81,7 +81,7 @@ void Acceptor::msg_proc(void)
 }
 
 
-void Acceptor::connect(std::string addr) 
+void Router::connect(std::string addr) 
 {
     std::vector<std::string> ep_params;
     ep_params = 
@@ -108,7 +108,7 @@ void Acceptor::connect(std::string addr)
 }
 
 
-void Acceptor::share_peers(std::shared_ptr<boost::asio::ip::tcp::socket> target) 
+void Router::share_peers(std::shared_ptr<boost::asio::ip::tcp::socket> target) 
 {
     boost::asio::write(*target, boost::asio::buffer(std::to_string(peers.size()) + '\n'));
     for (auto peer : peers)
@@ -118,7 +118,7 @@ void Acceptor::share_peers(std::shared_ptr<boost::asio::ip::tcp::socket> target)
 }
 
 
-void Acceptor::read_peers(std::shared_ptr<boost::asio::ip::tcp::socket> sock) 
+void Router::read_peers(std::shared_ptr<boost::asio::ip::tcp::socket> sock) 
 {
     boost::asio::streambuf buf;
     std::istream ist(&buf);

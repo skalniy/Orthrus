@@ -8,7 +8,7 @@
 
 
 
-class Acceptor
+class Router
 {
 private:
     std::string name = "anonymous";
@@ -30,7 +30,7 @@ private:
 
 
 public:
-    Acceptor(std::shared_ptr<boost::asio::io_service> io_service);
+    Router(std::shared_ptr<boost::asio::io_service> io_service);
     
     void start(void);
     void connect(std::string);

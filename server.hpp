@@ -12,7 +12,7 @@ private:
     std::shared_ptr<boost::asio::io_service> io_service = 
         std::make_shared<boost::asio::io_service>();
 
-    Acceptor acceptor = Acceptor(io_service);
+    Router acceptor = Router(io_service);
 
     std::unique_ptr<std::thread> thread; 
 
