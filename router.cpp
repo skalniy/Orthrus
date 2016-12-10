@@ -10,10 +10,11 @@
 Router::Router(std::shared_ptr<boost::asio::io_service> io_service) :
     acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*io_service))  
 {
-    std::cout << "Your name: ";
-    std::getline(std::cin, name);
+    std::cout << "Hostname: ";
+    std::getline(std::cin, hostname);
 
     std::cout << "Acceptor port: ";
+    unsigned short port;
     std::cin >> port;
 
     ep = boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);
@@ -23,7 +24,7 @@ Router::Router(std::shared_ptr<boost::asio::io_service> io_service) :
 }
 
 
-void Router::start(void) 
+void Router::start() 
 {
     acceptor->listen();
     std::string addr;
@@ -38,7 +39,16 @@ void Router::start(void)
 }
 
 
-void Router::init(void)
+void Router::stop()
+{
+    if (!acceptor->is_open())
+        return;
+    acceptor->cancel();
+    acceptor->close();
+}
+
+
+void Router::init()
 {
     std::shared_ptr<boost::asio::ip::tcp::socket> sock =
         std::make_shared<boost::asio::ip::tcp::socket>(
@@ -61,8 +71,8 @@ void Router::accept_handler(const boost::system::error_code& error,
     }
     init();
 
-    boost::asio::write(*sock, boost::asio::buffer(name + '\n'));
-    boost::asio::write(*sock, boost::asio::buffer(std::to_string(port) + '\n'));
+    boost::asio::write(*sock, boost::asio::buffer(hostname + '\n'));
+    boost::asio::write(*sock, boost::asio::buffer(std::to_string(ep.port()) + '\n'));
     std::shared_ptr<Peer> new_peer = std::make_shared<Peer>(sock);
     new_peer->listen();
     share_peers(new_peer->get_sock());
@@ -70,7 +80,7 @@ void Router::accept_handler(const boost::system::error_code& error,
 }
 
 
-void Router::msg_proc(void) 
+void Router::msg_proc() 
 {
     while (true) {
         std::string msg;
@@ -99,8 +109,8 @@ void Router::connect(std::string addr)
     std::cout << "connected to " << remote_ep << std::endl;
 
     std::shared_ptr<Peer> peer = std::make_shared<Peer>(sock);  
-    boost::asio::write(*peer->get_sock(), boost::asio::buffer(name + '\n'));
-    boost::asio::write(*peer->get_sock(), boost::asio::buffer(std::to_string(port) + '\n'));
+    boost::asio::write(*peer->get_sock(), boost::asio::buffer(hostname + '\n'));
+    boost::asio::write(*peer->get_sock(), boost::asio::buffer(std::to_string(ep.port()) + '\n'));
 
     peers.emplace(peer->get_remote_address(), peer);
     read_peers(peer->get_sock());

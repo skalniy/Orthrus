@@ -6,10 +6,10 @@ Peer::Peer(std::shared_ptr<boost::asio::ip::tcp::socket> sock_) : sock(sock_)
 {
     ist = std::make_shared<std::iostream>(buf.get());
     boost::asio::read_until(*sock, *buf, '\n');
-    std::getline(*ist, name);
+    std::getline(*ist, nickname);
     boost::asio::read_until(*sock, *buf, '\n');
-    std::getline(*ist, port);
-    std::cout << name  << " joined" << std::endl;
+    std::getline(*ist, remote_port);
+    std::cout << nickname  << " joined" << std::endl;
 }
 
 
@@ -38,7 +38,7 @@ void Peer::read_handler(const boost::system::error_code& ec,
     std::getline(*ist, msg);
     boost::asio::async_read_until(*sock, *buf, '\n', 
         boost::bind(&Peer::read_handler, this, _1, _2));
-    printf("[%s] %s\n", name.c_str(), msg.c_str());
+    printf("[%s] %s\n", nickname.c_str(), msg.c_str());
 }
 
 
