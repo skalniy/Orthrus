@@ -7,32 +7,16 @@
 
 
 
-Router::Router(std::shared_ptr<boost::asio::io_service> io_service) :
-    acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*io_service))  
-{
-    std::cout << "Hostname: ";
-    std::getline(std::cin, hostname);
-
-    std::cout << "Acceptor port: ";
-    unsigned short port;
-    std::cin >> port;
-
-    ep = boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);
-    acceptor->open(ep.protocol());
-    acceptor->set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-    acceptor->bind(ep);
-}
+Router::Router(std::shared_ptr<boost::asio::io_service> io_service,
+        std::string hostname_, unsigned short local_port) 
+    : hostname(hostname_)
+    , ep(boost::asio::ip::tcp::v4(), local_port)
+    , acceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(*io_service, ep, true))  
+{}
 
 
 void Router::start() 
 {
-    acceptor->listen();
-    std::string addr;
-    std::cout << "connect to remote host?" << std::endl << "IPv4:port / 0: ";
-    std::cin >> addr;
-    if (addr != "0")
-        connect(addr);
-
     writer_thread.reset(new std::thread(&Router::msg_proc, this));
 
     init();

@@ -17,7 +17,7 @@ private:
     std::shared_ptr<boost::asio::io_service> io_service = 
         std::make_shared<boost::asio::io_service>();
 
-    Router router = Router(io_service);
+    Router router;
 
     std::unique_ptr<std::thread> routerThread; 
 
@@ -26,9 +26,13 @@ private:
 
 
 public:
+	RouterController(std::string hostname, unsigned short local_port);
+
     void start();
     
     void stop();
+
+    void connect(std::string, std::string);
 };
 
 

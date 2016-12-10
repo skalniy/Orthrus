@@ -5,10 +5,10 @@
 
 
 #include <memory>
-#include <boost/asio.hpp>
 #include <thread>
 #include <unordered_set>
 #include <map>
+#include <boost/asio.hpp>
 #include "peer.hpp"
 
 
@@ -40,7 +40,8 @@ private:
 
 
 public:
-    Router(std::shared_ptr<boost::asio::io_service> io_service);
+    Router(std::shared_ptr<boost::asio::io_service> io_service, 
+        std::string hostname, unsigned short local_port);
     
     void start();
 
