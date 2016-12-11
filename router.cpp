@@ -85,7 +85,6 @@ void Router::accept_handler(const boost::system::error_code& error,
 
     boost::asio::write(*sock, boost::asio::buffer(hostname + '\n'));
     boost::asio::write(*sock, boost::asio::buffer(std::to_string(acceptor->local_endpoint().port()) + '\n'));
-    std::cout <<"sended" << acceptor->local_endpoint()<<std::endl;
     std::shared_ptr<Peer> new_peer = make_peer(sock);
     new_peer->listen();
     share_peers(new_peer->get_sock());
@@ -128,9 +127,7 @@ void Router::connect(std::string addr) try
     
     std::shared_ptr<boost::asio::ip::tcp::socket> sock = 
         std::make_shared<boost::asio::ip::tcp::socket>(acceptor->get_io_service());
-    std::cout << "ing "<<remote_ep<<std::endl;
     sock->connect(remote_ep);
-    std::cout << "ed "<<remote_ep<<std::endl;
 
     std::shared_ptr<Peer> peer = make_peer(sock);
     boost::asio::write(*peer->get_sock(), boost::asio::buffer(hostname + '\n'));
