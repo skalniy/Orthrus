@@ -49,9 +49,6 @@ public:
     const send_t send
         = std::bind(&Router::send_msg, this, std::placeholders::_1);
 
-    using accept_notifier_t = std::function<void(std::string)>;
-    accept_notifier_t accept_notifier = 0;
-
     Router(std::shared_ptr<boost::asio::io_service> io_service, 
         std::string hostname, unsigned short local_port);
     Router(std::shared_ptr<boost::asio::io_service> io_service, 

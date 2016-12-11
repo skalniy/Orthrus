@@ -1,7 +1,7 @@
 #include "router.hpp"
 #include <iostream>
 #include <sstream>
-#include <boost/bind.hpp>
+#include <functional>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <string>
@@ -53,7 +53,7 @@ void Router::init() try
         = std::make_shared<boost::asio::ip::tcp::socket>(
             acceptor->get_io_service());
     acceptor->async_accept(*sock, 
-        boost::bind(&Router::accept_handler, this, _1, sock));
+        std::bind(&Router::accept_handler, this, std::placeholders::_1, sock));
 }
 catch (std::exception& e) { error_handler(e); }
 
@@ -99,7 +99,7 @@ std::shared_ptr<Peer> Router::make_peer(
     std::shared_ptr<Peer> new_peer = std::make_shared<Peer>(sock, error_handler);
     new_peer->read_msg_cb = read_msg_cb;
     new_peer->disconnect_handler 
-        = boost::bind(&Router::disconnect, this, new_peer->get_remote_address());
+        = std::bind(&Router::disconnect, this, new_peer->get_remote_address());
 
     return new_peer;
 }

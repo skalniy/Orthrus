@@ -42,7 +42,7 @@ catch (std::exception& e) { error_handler(e); }
 void Peer::listen() try
 { 
     boost::asio::async_read_until(*sock, *buf, '\n',
-        boost::bind(&Peer::read_handler, this, _1, _2));
+        std::bind(&Peer::read_handler, this, std::placeholders::_1, std::placeholders::_2));
     read_msg_cb(nickname, "CONNECTED");
 }
 catch (std::exception& e) { error_handler(e); }
@@ -51,7 +51,7 @@ catch (std::exception& e) { error_handler(e); }
 void Peer::write(const std::string& msg) try
 {
     boost::asio::async_write(*sock, boost::asio::buffer(msg), 
-        boost::bind(&Peer::write_handler, this, _1, _2));
+        std::bind(&Peer::write_handler, this, std::placeholders::_1, std::placeholders::_2));
 }
 catch (std::exception& e) { error_handler(e); }
 
@@ -72,7 +72,7 @@ void Peer::read_handler(const boost::system::error_code& ec,
     std::string msg;
     std::getline(*ist, msg);
     boost::asio::async_read_until(*sock, *buf, '\n', 
-        boost::bind(&Peer::read_handler, this, _1, _2));
+        std::bind(&Peer::read_handler, this, std::placeholders::_1, std::placeholders::_2));
 
     read_msg_cb(nickname, msg);
 }

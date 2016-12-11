@@ -32,6 +32,7 @@ private:
 public:
 	RouterController(std::string hostname, unsigned short local_port);
     RouterController(std::string hostname, unsigned short local_port, error_handler_t&&);
+    ~RouterController();
 
     void set_error_handler(error_handler_t&& eh);
 
