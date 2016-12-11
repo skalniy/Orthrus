@@ -21,17 +21,22 @@ class Router
 public:
     using send_t = std::function<void(std::string)>;
     using error_handler_t = std::function<void(std::exception&)>;
+    using accept_notifier = std::function<void(std::string)>;
+    using read_msg_cb_t = std::function<void(std::string, std::string)>;
 
 private:
     std::string hostname;
+
+    read_msg_cb_t read_msg_cb;
 
     boost::asio::ip::tcp::endpoint ep;
 
     std::shared_ptr<boost::asio::ip::tcp::acceptor> acceptor;
 
-    std::map<std::string, std::shared_ptr<Peer>> peers;
-
     error_handler_t error_handler = 0;
+
+    std::map<std::string, std::shared_ptr<Peer>> peers;
+    
 
     void init();
 
@@ -48,6 +53,14 @@ private:
 public:
     Router(std::shared_ptr<boost::asio::io_service> io_service, 
         std::string hostname, unsigned short local_port);
+    Router(std::shared_ptr<boost::asio::io_service> io_service, 
+        std::string hostname, unsigned short local_port, error_handler_t&);
+
+    void set_read_msg_cb(read_msg_cb_t& cb) { 
+        read_msg_cb = cb;
+        for (auto peer_ : peers) 
+            peer_.second->set_read_msg_cb(cb);   
+    }
     
     void start();
 

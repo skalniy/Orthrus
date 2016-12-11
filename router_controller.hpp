@@ -14,28 +14,29 @@
 namespace Orthrus {
 
 
-
 class RouterController
 {
 public:
     using send_t = std::function<void(std::string)>;
     using error_handler_t = std::function<void(std::exception&)>;
+    using read_msg_cb_t = std::function<void(std::string, std::string)>;
 
 private:
     std::shared_ptr<boost::asio::io_service> io_service 
         = std::make_shared<boost::asio::io_service>();
 
+    error_handler_t error_handler;
+
     Router router;
 
     std::unique_ptr<std::thread> routerThread;
-
-    error_handler_t error_handler;
-    
+   
     void run();
 
 
 public:
 	RouterController(std::string hostname, unsigned short local_port);
+    RouterController(std::string hostname, unsigned short local_port, error_handler_t&&);
 
 	inline Router& get_router() { return router; }
    
@@ -49,6 +50,8 @@ public:
     void stop();
 
     void connect(std::string, std::string);
+
+    void set_read_msg_cb(read_msg_cb_t&& cb) { router.set_read_msg_cb(cb); }
 };
 
 

@@ -9,6 +9,13 @@ RouterController::RouterController(std::string hostname, unsigned short local_po
 	: router(io_service, hostname, local_port)
 {}
 
+RouterController::RouterController(std::string hostname, unsigned short local_port
+    , error_handler_t&& eh)
+    :  router(io_service, hostname, local_port, eh)
+{
+    error_handler = eh;
+}
+
 
 void RouterController::start(void) try
 { 

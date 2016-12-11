@@ -50,7 +50,8 @@ void Peer::read_handler(const boost::system::error_code& ec,
     std::getline(*ist, msg);
     boost::asio::async_read_until(*sock, *buf, '\n', 
         boost::bind(&Peer::read_handler, this, _1, _2));
-    printf("[%s] %s\n", nickname.c_str(), msg.c_str());
+    
+    read_msg_cb(nickname, msg);
 }
 catch (std::exception& e) { error_handler(e); }
 

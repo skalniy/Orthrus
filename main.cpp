@@ -27,6 +27,14 @@ void error_handler(exception& e)
 { cerr << e.what() << endl; }
 
 
+void accepted(std::string name)
+{ cout << name << " joined the room" << endl; }
+
+
+void read_msg(std::string nick, std::string msg)
+{ cout << '[' << nick << "] " << msg << endl;}
+
+
 int main(int argc, char const *argv[]) try
 {
 	if (!((argc == 3) || (argc == 1))) {
@@ -43,9 +51,8 @@ int main(int argc, char const *argv[]) try
 	cin >> port;
 	getline(cin, str);
 
-    RouterController s(hname, port);
-    s.set_error_handler(&error_handler);
-    
+    RouterController s(hname, port, &error_handler);
+    s.set_read_msg_cb(&read_msg);   
     s.start();
     if (argc == 3)
     	s.connect(argv[1], argv[2]);
