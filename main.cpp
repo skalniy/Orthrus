@@ -11,7 +11,7 @@ using namespace std;
 using namespace Orthrus;
 
 
-void msg_proc(RouterController::send_t write) 
+void msg_proc(Router::send_t write) 
 {
     while (true) {
         std::string msg;
@@ -25,6 +25,14 @@ void msg_proc(RouterController::send_t write)
 
 void error_handler(exception& e)
 { cerr << e.what() << endl; }
+
+
+void accepted(std::string name)
+{ cout << name << " joined the room" << endl; }
+
+
+void read_msg(std::string nick, std::string msg)
+{ cout << '[' << nick << "] " << msg << endl;}
 
 
 int main(int argc, char const *argv[]) try
@@ -43,15 +51,17 @@ int main(int argc, char const *argv[]) try
 	cin >> port;
 	getline(cin, str);
 
-    RouterController s(hname, port);
-    s.set_error_handler(&error_handler);
-    
+    RouterController s(hname, port, &error_handler);
+    s.get_router().set_read_msg_cb(&read_msg); 
+    s.get_router().accept_notifier = &accepted;  
     s.start();
-    if (argc == 3)
-    	s.connect(argv[1], argv[2]);
+    if (argc == 3) {
+        string st = string(argv[1])+':'+ string(argv[2]);
+    	s.get_router().connect(st);
+    }
 
     std::unique_ptr<std::thread> writer_thread;
-    writer_thread.reset(new std::thread(&msg_proc, s.send));
+    writer_thread.reset(new std::thread(&msg_proc, s.get_router().send));
     writer_thread->join();
 
     s.stop();
