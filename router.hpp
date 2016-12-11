@@ -1,40 +1,69 @@
 #pragma once
+
+#ifndef ROUTER_H
+#define ROUTER_H
+
+
 #include <memory>
-#include <boost/asio.hpp>
 #include <thread>
 #include <unordered_set>
 #include <map>
+#include <boost/asio.hpp>
 #include "peer.hpp"
 
 
 
+namespace Orthrus {
+
+
 class Router
 {
+public:
+    using send_t = std::function<void(std::string)>;
+    using error_handler_t = std::function<void(std::exception&)>;
+
 private:
-    std::string name = "anonymous";
-    unsigned short port;
+    std::string hostname;
+
+    boost::asio::ip::tcp::endpoint ep;
 
     std::shared_ptr<boost::asio::ip::tcp::acceptor> acceptor;
-    boost::asio::ip::tcp::endpoint ep;
+
     std::map<std::string, std::shared_ptr<Peer>> peers;
 
-    std::unique_ptr<std::thread> writer_thread;
+    error_handler_t error_handler = 0;
 
-
-    void init(void);
+    void init();
 
     void accept_handler(const boost::system::error_code& error,
         std::shared_ptr<boost::asio::ip::tcp::socket> sock);
 
-    void msg_proc(void);
+    void share_peers(std::shared_ptr<boost::asio::ip::tcp::socket> target);
+
+    void read_peers(std::shared_ptr<boost::asio::ip::tcp::socket> sock);
+
+    
 
 
 public:
-    Router(std::shared_ptr<boost::asio::io_service> io_service);
+    Router(std::shared_ptr<boost::asio::io_service> io_service, 
+        std::string hostname, unsigned short local_port);
     
-    void start(void);
+    void start();
+
+    void stop();
+
     void connect(std::string);
 
-    void share_peers(std::shared_ptr<boost::asio::ip::tcp::socket> target);
-    void read_peers(std::shared_ptr<boost::asio::ip::tcp::socket> sock);
+    void send_msg(std::string msg);
+
+    void set_error_handler(error_handler_t& eh);
+    
 };
+
+
+}
+
+
+
+#endif // ROUTER_H

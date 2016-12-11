@@ -1,14 +1,64 @@
-#include "server.hpp"
-#include <chrono>
+#include "router_controller.hpp"
+#include <iostream>
+#include <string>
+#include <exception>
+#include <memory>
 #include <thread>
 
 
 
-int main(int argc, char const *argv[])
+using namespace std;
+using namespace Orthrus;
+
+
+void msg_proc(RouterController::send_t write) 
 {
-    Server s;
+    while (true) {
+        std::string msg;
+        std::getline(std::cin, msg);
+        if (msg == "#exit")
+        	return;
+        write(msg);
+    }
+}
+
+
+void error_handler(exception& e)
+{ cerr << e.what() << endl; }
+
+
+int main(int argc, char const *argv[]) try
+{
+	if (!((argc == 3) || (argc == 1))) {
+		cerr << "Usage: orthrus <host> <port>" << endl;
+		return 1;
+	}
+
+	cout << "Hostname: ";
+	string str, hname;
+	unsigned short port;
+	getline(cin, str);
+	hname = str;
+	cout << "Host port: ";
+	cin >> port;
+	getline(cin, str);
+
+    RouterController s(hname, port);
+    s.set_error_handler(&error_handler);
+    
     s.start();
-    std::this_thread::sleep_for(std::chrono::seconds(300));
+    if (argc == 3)
+    	s.connect(argv[1], argv[2]);
+
+    std::unique_ptr<std::thread> writer_thread;
+    writer_thread.reset(new std::thread(&msg_proc, s.send));
+    writer_thread->join();
+
     s.stop();
+
     return 0;
+}
+catch (std::exception& e) { 
+    error_handler(e);
+    return 1; 
 }
