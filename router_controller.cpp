@@ -11,10 +11,9 @@ RouterController::RouterController(std::string hostname, unsigned short local_po
 
 RouterController::RouterController(std::string hostname, unsigned short local_port
     , error_handler_t&& eh)
-    :  router(io_service, hostname, local_port, eh)
-{
-    error_handler = eh;
-}
+    : router(io_service, hostname, local_port, eh)
+    , error_handler(eh)
+{}
 
 
 void RouterController::start(void) try
@@ -42,10 +41,7 @@ void RouterController::run(void) try
 catch (std::exception& e) { error_handler(e); }
 
 
-void RouterController::connect(std::string host, std::string port) try
-{
-	router.connect(host+':'+port);
-}
+Router& RouterController::get_router() try { return router; }
 catch (std::exception& e) { error_handler(e); }
 
 

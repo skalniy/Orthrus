@@ -22,9 +22,11 @@ Router::Router(std::shared_ptr<boost::asio::io_service> io_service,
 Router::Router(std::shared_ptr<boost::asio::io_service> io_service,
         std::string hostname_, unsigned short local_port, error_handler_t& eh) 
     : Router(io_service, hostname_, local_port) 
-{
-    error_handler = eh;
-}
+{  error_handler = eh; }
+
+
+Router::~Router() 
+{ stop(); }
 
 
 void Router::start() try
@@ -56,6 +58,23 @@ void Router::init() try
 catch (std::exception& e) { error_handler(e); }
 
 
+void Router::set_read_msg_cb(read_msg_cb_t&& cb) try
+{ 
+    read_msg_cb = cb;
+    for (auto peer : peers)
+        peer.second->read_msg_cb = cb;
+}
+catch (std::exception& e) { error_handler(e); }
+
+
+void Router::set_error_handler(error_handler_t& eh) try
+{ 
+    error_handler = eh;
+    for (auto peer : peers)
+        peer.second->error_handler = error_handler;
+}
+catch (std::exception& e) { error_handler(e); }
+
 void Router::accept_handler(const boost::system::error_code& error,
     std::shared_ptr<boost::asio::ip::tcp::socket> sock) try
 {
@@ -67,15 +86,24 @@ void Router::accept_handler(const boost::system::error_code& error,
     boost::asio::write(*sock, boost::asio::buffer(hostname + '\n'));
     boost::asio::write(*sock, boost::asio::buffer(std::to_string(acceptor->local_endpoint().port()) + '\n'));
     std::cout <<"sended" << acceptor->local_endpoint()<<std::endl;
-    std::shared_ptr<Peer> new_peer = std::make_shared<Peer>(sock, error_handler);
-    new_peer->set_read_msg_cb(read_msg_cb);
-    new_peer->disconnect_handler 
-        = boost::bind(&Router::disconnect, this, new_peer->get_remote_address());
+    std::shared_ptr<Peer> new_peer = make_peer(sock);
     new_peer->listen();
     share_peers(new_peer->get_sock());
     peers.emplace(new_peer->get_remote_address(), new_peer);
 }
 catch (std::exception& e) { error_handler(e); }
+
+
+std::shared_ptr<Peer> Router::make_peer(
+    std::shared_ptr<boost::asio::ip::tcp::socket> sock)
+{
+    std::shared_ptr<Peer> new_peer = std::make_shared<Peer>(sock, error_handler);
+    new_peer->read_msg_cb = read_msg_cb;
+    new_peer->disconnect_handler 
+        = boost::bind(&Router::disconnect, this, new_peer->get_remote_address());
+
+    return new_peer;
+}
 
 
 void Router::send_msg(std::string msg) try
@@ -104,10 +132,7 @@ void Router::connect(std::string addr) try
     sock->connect(remote_ep);
     std::cout << "ed "<<remote_ep<<std::endl;
 
-    std::shared_ptr<Peer> peer = std::make_shared<Peer>(sock, error_handler);
-    peer->set_read_msg_cb(read_msg_cb);  
-    peer->disconnect_handler 
-        = boost::bind(&Router::disconnect, this, peer->get_remote_address());
+    std::shared_ptr<Peer> peer = make_peer(sock);
     boost::asio::write(*peer->get_sock(), boost::asio::buffer(hostname + '\n'));
     boost::asio::write(*peer->get_sock(), boost::asio::buffer(std::to_string(ep.port()) + '\n'));
 
@@ -150,9 +175,3 @@ void Router::read_peers(std::shared_ptr<boost::asio::ip::tcp::socket> sock) try
     }
 }
 catch (std::exception& e) { error_handler(e); }
-
-
-void Router::set_error_handler(error_handler_t& eh)
-{ 
-    error_handler = eh; 
-}
