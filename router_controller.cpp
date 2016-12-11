@@ -16,6 +16,10 @@ RouterController::RouterController(std::string hostname, unsigned short local_po
 {}
 
 
+RouterController::~RouterController()
+{ stop(); }
+
+
 void RouterController::start(void) try
 { 
 	routerThread.reset(new std::thread(&RouterController::run, this)); 
