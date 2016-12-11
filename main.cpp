@@ -1,26 +1,33 @@
 #include "router_controller.hpp"
 #include <iostream>
-#include <functional>
 #include <string>
+#include <exception>
+#include <memory>
+#include <thread>
 
 
 
 using namespace std;
+using namespace Orthrus;
 
 
-void msg_proc(RouterController::write_t write) 
+void msg_proc(RouterController::send_t write) 
 {
     while (true) {
         std::string msg;
         std::getline(std::cin, msg);
-        if (msg == "exit")
+        if (msg == "#exit")
         	return;
         write(msg);
     }
 }
 
 
-int main(int argc, char const *argv[])
+void error_handler(exception& e)
+{ cerr << e.what() << endl; }
+
+
+int main(int argc, char const *argv[]) try
 {
 	if (!((argc == 3) || (argc == 1))) {
 		cerr << "Usage: orthrus <host> <port>" << endl;
@@ -37,14 +44,21 @@ int main(int argc, char const *argv[])
 	getline(cin, str);
 
     RouterController s(hname, port);
+    s.set_error_handler(&error_handler);
+    
     s.start();
     if (argc == 3)
     	s.connect(argv[1], argv[2]);
 
     std::unique_ptr<std::thread> writer_thread;
-    writer_thread.reset(new std::thread(&msg_proc, s.write));
+    writer_thread.reset(new std::thread(&msg_proc, s.send));
     writer_thread->join();
+
     s.stop();
 
     return 0;
+}
+catch (std::exception& e) { 
+    error_handler(e);
+    return 1; 
 }

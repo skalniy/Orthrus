@@ -13,8 +13,15 @@
 
 
 
+namespace Orthrus {
+
+
 class Router
 {
+public:
+    using send_t = std::function<void(std::string)>;
+    using error_handler_t = std::function<void(std::exception&)>;
+
 private:
     std::string hostname;
 
@@ -23,6 +30,8 @@ private:
     std::shared_ptr<boost::asio::ip::tcp::acceptor> acceptor;
 
     std::map<std::string, std::shared_ptr<Peer>> peers;
+
+    error_handler_t error_handler = 0;
 
     void init();
 
@@ -47,8 +56,13 @@ public:
     void connect(std::string);
 
     void send_msg(std::string msg);
+
+    void set_error_handler(error_handler_t& eh);
     
 };
+
+
+}
 
 
 

@@ -6,14 +6,23 @@
 
 #include <memory>
 #include <iostream>
+#include <functional>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
 
 
+namespace Orthrus {
+
+
 class Peer
 {
+public:
+    using error_handler_t = std::function<void(std::exception&)>;
 private:
+    
+    error_handler_t error_handler;
+
     std::string nickname;
 
     std::string remote_port;
@@ -29,6 +38,7 @@ private:
 
 public:
     Peer(std::shared_ptr<boost::asio::ip::tcp::socket>);
+    Peer(std::shared_ptr<boost::asio::ip::tcp::socket>, error_handler_t&);
     
     ~Peer();
 
@@ -48,6 +58,7 @@ public:
             boost::bind(&Peer::read_handler, this, _1, _2));
     }
 
+    void set_error_handler(error_handler_t& eh);
 
     void write(const std::string&);
 
@@ -55,6 +66,9 @@ public:
 
     void write_handler(const boost::system::error_code&, std::size_t);
 };
+
+
+}
 
 
 
