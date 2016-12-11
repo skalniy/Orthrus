@@ -24,9 +24,6 @@ private:
 
     std::map<std::string, std::shared_ptr<Peer>> peers;
 
-    std::unique_ptr<std::thread> writer_thread;
-
-
     void init();
 
     void accept_handler(const boost::system::error_code& error,
@@ -36,7 +33,7 @@ private:
 
     void read_peers(std::shared_ptr<boost::asio::ip::tcp::socket> sock);
 
-    void msg_proc();
+    
 
 
 public:
@@ -49,6 +46,7 @@ public:
 
     void connect(std::string);
 
+    void send_msg(std::string msg);
     
 };
 

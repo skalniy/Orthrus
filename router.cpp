@@ -17,8 +17,6 @@ Router::Router(std::shared_ptr<boost::asio::io_service> io_service,
 
 void Router::start() 
 {
-    writer_thread.reset(new std::thread(&Router::msg_proc, this));
-
     init();
 }
 
@@ -64,14 +62,10 @@ void Router::accept_handler(const boost::system::error_code& error,
 }
 
 
-void Router::msg_proc() 
+void Router::send_msg(std::string msg) 
 {
-    while (true) {
-        std::string msg;
-        std::getline(std::cin, msg);
-        for (auto peer_ : peers)
-            peer_.second->write(msg+'\n'); 
-    }
+    for (auto peer_ : peers)
+        peer_.second->write(msg+'\n'); 
 }
 
 
