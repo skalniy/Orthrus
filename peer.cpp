@@ -59,23 +59,16 @@ catch (std::exception& e) { error_handler(e); }
 void Peer::read_handler(const boost::system::error_code& ec,
     std::size_t bytes_transferred) try
 {   
-    // switch(ec.value()) {
-    //     case boost::asio::error::eof:
-    //         read_msg_cb(nickname, "DISCONNECTED");
-    //         disconnect_handler();
-    //         return;
-    //     default:
-    //         throw std::runtime_error('['+nickname+"] "+ec.message());
-    // }
-    if ((ec.value() == boost::asio::error::eof)) {
-        read_msg_cb(nickname, "DISCONNECTED");
-        disconnect_handler();
-        return;
+    switch(ec.value()) {
+        case 0:
+            break;
+        case boost::asio::error::eof:
+            read_msg_cb(nickname, "DISCONNECTED");
+            disconnect_handler();
+            return;
+        default:
+            throw std::runtime_error('['+nickname+"] "+ec.message());
     }
-    else if (ec) {
-        throw std::runtime_error('['+nickname+"] "+ec.message());
-    }
-
     std::string msg;
     std::getline(*ist, msg);
     boost::asio::async_read_until(*sock, *buf, '\n', 
@@ -89,12 +82,11 @@ catch (std::exception& e) { error_handler(e); }
 void Peer::write_handler(const boost::system::error_code& ec, 
     std::size_t bytes_transferred) try
 {
-    // switch(ec.value()) {
-    //     default:
-    //         throw std::runtime_error('['+nickname+"] "+ec.message());
-    // }
-    if (ec) {
-        throw std::runtime_error('['+nickname+"] "+ec.message());
+    switch(ec.value()) {
+        case 0:
+            break;
+        default:
+            throw std::runtime_error('['+nickname+"] "+ec.message());
     }
 }
 catch (std::exception& e) { error_handler(e); }
