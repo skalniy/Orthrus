@@ -52,7 +52,8 @@ int main(int argc, char const *argv[]) try
 	getline(cin, str);
 
     RouterController s(hname, port, &error_handler);
-    s.set_read_msg_cb(&read_msg);   
+    s.set_read_msg_cb(&read_msg); 
+    s.get_router().accept_notifier = &accepted;  
     s.start();
     if (argc == 3)
     	s.connect(argv[1], argv[2]);

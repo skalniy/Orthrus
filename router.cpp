@@ -4,6 +4,7 @@
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <string>
 
 
 
@@ -67,6 +68,8 @@ void Router::accept_handler(const boost::system::error_code& error,
     boost::asio::write(*sock, boost::asio::buffer(std::to_string(ep.port()) + '\n'));
     std::shared_ptr<Peer> new_peer = std::make_shared<Peer>(sock, error_handler);
     new_peer->set_read_msg_cb(read_msg_cb);
+    new_peer->disconnect_handler 
+        = boost::bind(&Router::disconnect, this, new_peer->get_remote_address());
     new_peer->listen();
     share_peers(new_peer->get_sock());
     peers.emplace(new_peer->get_remote_address(), new_peer);
@@ -97,10 +100,11 @@ void Router::connect(std::string addr) try
     std::shared_ptr<boost::asio::ip::tcp::socket> sock = 
         std::make_shared<boost::asio::ip::tcp::socket>(acceptor->get_io_service());
     sock->connect(remote_ep);
-    std::cout << "connected to " << remote_ep << std::endl;
 
     std::shared_ptr<Peer> peer = std::make_shared<Peer>(sock, error_handler);
     peer->set_read_msg_cb(read_msg_cb);  
+    peer->disconnect_handler 
+        = boost::bind(&Router::disconnect, this, peer->get_remote_address());
     boost::asio::write(*peer->get_sock(), boost::asio::buffer(hostname + '\n'));
     boost::asio::write(*peer->get_sock(), boost::asio::buffer(std::to_string(ep.port()) + '\n'));
 

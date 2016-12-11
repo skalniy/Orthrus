@@ -22,8 +22,13 @@ public:
     using error_handler_t = std::function<void(std::exception&)>;
     using read_msg_cb_t = std::function<void(std::string, std::string)>;
 
+    using disconnect_handler_t  = std::function<void()>;
+    using connect_handler_t     = std::function<void()>;
+
 private:
     error_handler_t error_handler;
+
+    
 
     read_msg_cb_t read_msg_cb; 
 
@@ -40,11 +45,18 @@ private:
         std::make_shared<std::iostream>(buf.get());
 
 
+
+
 public:
     Peer(std::shared_ptr<boost::asio::ip::tcp::socket>);
     Peer(std::shared_ptr<boost::asio::ip::tcp::socket>, error_handler_t&);
 
     void set_read_msg_cb(read_msg_cb_t& cb) { read_msg_cb = cb; }
+
+    disconnect_handler_t disconnect_handler;
+    connect_handler_t connect_handler;
+
+    std::string get_nickname() { return nickname; }
     
     ~Peer();
 
@@ -56,8 +68,12 @@ public:
     { return sock; }
 
     inline void listen() 
-    { boost::asio::async_read_until(*sock, *buf, '\n',
-        boost::bind(&Peer::read_handler, this, _1, _2)); }
+    { 
+
+        boost::asio::async_read_until(*sock, *buf, '\n',
+            boost::bind(&Peer::read_handler, this, _1, _2));
+        read_msg_cb(nickname, "CONNECTED");
+    }
 
     void set_error_handler(error_handler_t& eh);
 
