@@ -64,11 +64,7 @@ catch (std::exception& e) { error_handler(e); }
 void Peer::write_handler(const boost::system::error_code& ec, 
     std::size_t bytes_transferred) try
 {
-    if (boost::system::errc::bad_file_descriptor) {
-        //read_msg_cb(nickname, "DISCONNECTED");
-        //disconnect_handler();
-    }
-    else if (ec) {
+    if (ec) {
         throw std::runtime_error('['+nickname+"] "+ec.message());
     }
 }

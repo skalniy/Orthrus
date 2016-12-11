@@ -46,7 +46,6 @@ private:
 
 
 
-
 public:
     Peer(std::shared_ptr<boost::asio::ip::tcp::socket>);
     Peer(std::shared_ptr<boost::asio::ip::tcp::socket>, error_handler_t&);
@@ -62,14 +61,13 @@ public:
 
     inline std::string get_remote_address() 
     { return sock->remote_endpoint().address().to_string() 
-        + ':' + std::to_string(sock->remote_endpoint().port()); }
+        + ':' + remote_port; }
 
     inline std::shared_ptr<boost::asio::ip::tcp::socket> get_sock()
     { return sock; }
 
     inline void listen() 
     { 
-
         boost::asio::async_read_until(*sock, *buf, '\n',
             boost::bind(&Peer::read_handler, this, _1, _2));
         read_msg_cb(nickname, "CONNECTED");
